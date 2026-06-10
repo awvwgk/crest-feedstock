@@ -1,0 +1,20 @@
+diff --git a/config/meson.build b/config/meson.build
+index dd58b69..33999c6 100644
+--- a/config/meson.build
++++ b/config/meson.build
+@@ -125,12 +125,12 @@ elif lapack_vendor == 'custom'
+ else
+   lapack_dep = dependency(ilp64 ? 'lapack64' : 'lapack', required: false)
+   if not lapack_dep.found()
+-    lapack_dep = fc.find_library(ilp64 ? 'lapack64' : 'lapack')
++    lapack_dep = cc.find_library(ilp64 ? 'lapack64' : 'lapack')
+   endif
+   lib_deps += lapack_dep
+-  blas_dep = fc.find_library(ilp64 ? 'blas64' : 'blas', required: false)
++  blas_dep = dependency(ilp64 ? 'blas64' : 'blas', required: false)
+   if not blas_dep.found()
+-    blas_dep = fc.find_library(ilp64 ? 'blas64' : 'blas')
++    blas_dep = cc.find_library(ilp64 ? 'blas64' : 'blas')
+   endif
+   lib_deps += blas_dep
+ endif

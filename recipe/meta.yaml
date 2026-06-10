@@ -10,10 +10,8 @@ source:
     sha256: f5d00d41c18a6f999ec8c890aa56d4b7ac8b1bf52a8c6d48c1d151c0126f7793
     patches:
       - 0001-double-allocation.patch
-
-  - folder: subprojects/toml-f
-    sha256: e66d0e355a8a2e65fd5fc7cd4f00078dfbdbf1b3cc47b60f028c19467df4c337
-    url: https://github.com/toml-f/toml-f/archive/v0.4.2.tar.gz
+      - 0003-install.patch
+      - 0004-config.patch
 
   - folder: subprojects/gfnff
     sha256: b69d7b2b34778c3e732bb41d91b934628ccd9c6e15002092888df7778c8a501f
@@ -27,49 +25,29 @@ source:
     sha256: cf76a8aa72aeba1ec8d8f0fe9f5cb4ce24c989e05ee6f3a775f7f17b8079f61c
     url: https://github.com/crest-lab/lwoniom/archive/v0.0.1.tar.gz
 
-  - folder: subprojects/test-drive
-    sha256: 46aa66cb3761eb7bb46563325c2a5b5f561f654cd9d8151487cd19be1f813370
-    url: https://github.com/fortran-lang/test-drive/archive/482fc754e5573466962b9c887126829eb78f9f1a.tar.gz
-
   - folder: subprojects/tblite
     sha256: c65623e933581a05d781b91a50d92586f54cbb094f90646222f143952694f996
     url: https://github.com/pprcht/tblite/archive/v0.3.0-fork.tar.gz
 
-  - folder: subprojects/tblite/subprojects/mctc-lib
-    sha256: 03dc8ccba37413da70e55a07cef8e8de53bce33f5bb52c1f8db5fec326abe083
-    url: https://github.com/grimme-lab/mctc-lib/archive/v0.3.1.tar.gz
-
-  - folder: subprojects/tblite/subprojects/dftd4
+  - folder: subprojects/dftd4
     sha256: 0e3e8d5f9e9e5414b9979967c074c953706053832e551d922c27599e7324bace
     url: https://github.com/dftd4/dftd4/archive/v3.6.0.tar.gz
+    patches:
+      - 0002-find_library.patch
 
-  - folder: subprojects/tblite/subprojects/dftd4/subprojects/mstore
+  - folder: subprojects/mstore
     sha256: 56b3d778629eb74b8a515cd53c727d04609f858a07f8d3555fd5fd392a206dcc
     url: https://github.com/grimme-lab/mstore/archive/v0.3.0.tar.gz
 
-  - folder: subprojects/tblite/subprojects/dftd4/subprojects/multicharge
+  - folder: subprojects/multicharge
     sha256: 953e2ace2f4035b1fa8ecf680f90b5ce6ad5caae17c8d8ccbc2578b92b69d3e7
     url: https://github.com/grimme-lab/multicharge/archive/v0.2.0.tar.gz
 
-  - folder: subprojects/tblite/subprojects/s-dftd3
-    sha256: 4bef311f8e5a2c32141eddeea65615c3c8480f917cd884488ede059fb0962a50
-    url: https://github.com/awvwgk/simple-dftd3/archive/v0.6.0.tar.gz
-
 build:
-  number: 1
+  number: 2
   skip: true  # [win]
-  script:
-    - set -ex
-    - cp -r ${SRC_DIR}/subprojects/test-drive ${SRC_DIR}/subprojects/toml-f/subprojects/test-drive
-    - export FFLAGS="${FFLAGS} -ffree-line-length-none"
-    - |
-      cmake ${CMAKE_ARGS} \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-            -DWITH_TESTS=OFF \
-            -B build_dir \
-            -GNinja
-    - cmake --build build_dir
-    - cmake --install build_dir
+  ignore_run_exports:
+    - test-drive  # test dependency only
 
 requirements:
   build:
@@ -77,12 +55,18 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('fortran') }}
     - cmake
+    - meson 1.7.*
     - ninja
     - libgomp  # [linux]
     - llvm-openmp  # [osx]
+    - pkg-config
   host:
     - libblas
     - liblapack
+    - mctc-lib-devel * gfortran_*
+    - simple-dftd3-devel * gfortran_*
+    - test-drive-devel * gfortran_*
+    - toml-f-devel * gfortran_*
   run:
     - xtb
 
@@ -93,29 +77,21 @@ test:
 about:
   home: https://crest-lab.github.io/crest-docs/
   license: LGPL-3.0-or-later
-  license_family: GPL
   license_file:
     - COPYING  # LGPL-3.0-or-later
     - COPYING.LESSER
-    - subprojects/toml-f/LICENSE-Apache  # Apache-2.0 or MIT
-    - subprojects/toml-f/LICENSE-MIT
     - subprojects/gfnff/COPYING  # LGPL-3.0-or-later
     - subprojects/gfnff/COPYING.LESSER
     - subprojects/gfn0/COPYING  # LGPL-3.0-or-later
     - subprojects/gfn0/COPYING.LESSER
     - subprojects/lwoniom/COPYING  # LGPL-3.0-or-later
     - subprojects/lwoniom/COPYING.LESSER
-    - subprojects/test-drive/LICENSE-Apache  # Apache-2.0 or MIT
-    - subprojects/test-drive/LICENSE-MIT
     - subprojects/tblite/COPYING  # LGPL-3.0-or-later
     - subprojects/tblite/COPYING.LESSER
-    - subprojects/tblite/subprojects/mctc-lib/LICENSE  # Apache-2.0
-    - subprojects/tblite/subprojects/dftd4/COPYING  # LGPL-3.0-or-later
-    - subprojects/tblite/subprojects/dftd4/COPYING.LESSER
-    - subprojects/tblite/subprojects/dftd4/subprojects/mstore/LICENSE  # Apache-2.0
-    - subprojects/tblite/subprojects/dftd4/subprojects/multicharge/LICENSE  # Apache-2.0
-    - subprojects/tblite/subprojects/s-dftd3/COPYING  # LGPL-3.0-or-later
-    - subprojects/tblite/subprojects/s-dftd3/COPYING.LESSER
+    - subprojects/dftd4/COPYING  # LGPL-3.0-or-later
+    - subprojects/dftd4/COPYING.LESSER
+    - subprojects/mstore/LICENSE  # Apache-2.0
+    - subprojects/multicharge/LICENSE  # Apache-2.0
   summary: 'Conformer-Rotamer Ensemble Sampling Tool based on the xtb Semiempirical Extended Tight-Binding Program Package'
   description: |
     This is the official repository of the CREST. The program was
